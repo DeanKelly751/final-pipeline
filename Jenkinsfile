@@ -1,6 +1,6 @@
 pipeline {
   environment {
-    dockerimagename = "python-app"
+    dockerimagename = "alnx551/python-app"
     dockerImage = ""
   }
   agent any
