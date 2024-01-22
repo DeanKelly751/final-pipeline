@@ -1,39 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
-  labels:
-    app: flaskdemo
-  name: flaskdemo
+  name: flask-app-deploy
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: flaskdemo
-  strategy: {}
+      app: flask-app
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        app: flaskdemo
+        app: flask-app
     spec:
       containers:
-      - image: alnx551/python-app:10
-        name: flaskdemo
-        resources: {}
-status: {}
+      - name: flask-app-container
+        image: alnx551/python-app:18
+        ports:
+        - containerPort: 5000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: flask-service
-  labels:
-    app: flask-service
+  name: flask-app-svc
 spec:
   type: NodePort
   ports:
-  - nodePort: 30001
-    port: 80
+  - port: 80
     targetPort: 5000
+    nodePort: 32000
   selector:
-    app: flaskdemo
+    app: flask-app
