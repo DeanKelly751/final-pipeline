@@ -44,7 +44,7 @@ pipeline {
                     git config --global user.email "20100677@mail.wit.ie"
                     git add deployment.yaml
                     git commit -m 'Updated the deployment file: ${BUILD_NUMBER}' """
-                    withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'pass', usernameVariable: 'user')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github_credentials', passwordVariable: 'pass', usernameVariable: 'user')]) {
                         sh "git push http://$user:$pass@github.com/ANSN07/python.git main"
                     }
                 }
