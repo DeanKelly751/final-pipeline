@@ -1,33 +1,54 @@
 pipeline {
-  environment {
-    dockerimagename = "alnx551/python-app"
-    dockerImage = ""
-  }
-  agent any
-  stages {
-    stage('Checkout Source') {
-      steps {
-        git 'https://github.com/ANSN07/python'
-      }
+    environment {
+        REGISTRY_CREDENTIAL = 'dockerhub-credentials'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        DOCKERHUB_USERNAME = 'alnx551'
+        APP_NAME = 'python-app'
+        IMAGE_NAME = "${DOCKERHUB_USERNAME}" + '/' + "${APP_NAME}"
     }
-    stage('Build image') {
-      steps{
-        script {
-          dockerImage = docker.build dockerimagename
+    agent any
+    stages {
+        stage('Checkout Source') {
+            steps {
+                git 'https://github.com/ANSN07/python.git'
+            }
         }
-      }
-    }
-    stage('Pushing Image') {
-      environment {
-          registryCredential = 'dockerhub-credentials'
-           }
-      steps{
-        script {
-          docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) {
-            dockerImage.push("latest")
-          }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build IMAGE_NAME
+                }
+            }
         }
-      }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIAL) {
+                        dockerImage.push("${BUILD_NUMBER}")
+                    }
+                }
+            }
+        }
+        stage('Modify the image in Kubernetes deployment file') {
+            steps {
+                sh 'cat deployment.yaml'
+                sh "sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yaml"
+                sh 'cat deployment.yaml'
+            }
+        }
+        stage('Push the changed deployment file to Git') {
+            steps {
+                script {
+                    sh """
+                    git config --global user.name "Alka"
+                    git config --global user.email "20100677@mail.wit.ie"
+                    git add deployment.yaml
+                    git commit -m 'Updated the deployment file: ${BUILD_NUMBER}' """
+                    withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'pass', usernameVariable: 'user')]) {
+                        sh "git push http://$user:$pass@github.com/ANSN07/python.git main"
+                    }
+                }
+            }
+        }
     }
-  }
 }
