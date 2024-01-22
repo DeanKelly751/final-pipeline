@@ -1,29 +1,37 @@
-# Copyright 2019 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+import socket
+from uuid import getnode as get_mac
+from flask import Flask,jsonify
 
-# [START gke_quickstarts_languages_python_app]
-import os
-
-from flask import Flask
-
+# Get device details
+def get_device_details():
+	hostname = socket.gethostname()
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("8.8.8.8", 80))
+	ip = s.getsockname()[0]
+	s.close()
+	MAC_address = get_mac()
+	MAC_address = (':'.join(("%012X" % MAC_address)[i:i+2] for i in range(0, 12, 2)) ).replace(":", "-")
+	return hostname,ip,MAC_address
+	
 app = Flask(__name__)
 
-@app.route('/')
-def hello_world():
-    target = os.environ.get('TARGET', 'World')
-    return 'Hello {}!\n'.format(target)
+# Returns device hostname,IP and MAC address
+@app.route("/details")
+def details():
+    hostname,ip,mac = get_device_details()
+    out = "Hello!!!....I'm " + hostname + "....My MAC ID is " + mac + "....and My IP address is "+ip
+    return out
 
+@app.route("/health")
+def health():
+    return jsonify(
+        status="up"
+    )
+
+@app.route("/")
+def home():
+    return "Hello from DevOps Made Easy"
+   
 if __name__ == "__main__":
-    app.run(debug=True,host='0.0.0.0',port=int(os.environ.get('PORT', 8080)))
-# [END gke_quickstarts_languages_python_app]
+    app.run(host="0.0.0.0", port=int("5000"), debug=True)
+	
