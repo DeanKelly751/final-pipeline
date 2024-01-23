@@ -44,13 +44,8 @@ pipeline {
                     git config --global user.email "20100677@mail.wit.ie"
                     git add deployment.yaml
                     git commit -m 'Updated the deployment file: ${BUILD_NUMBER}' """
-<<<<<<< Updated upstream
-                    withCredentials([usernamePassword(credentialsId: 'github_credentials', passwordVariable: 'pass', usernameVariable: 'user')]) {
-                        sh "git push https://$user:$pass@github.com/ANSN07/python.git master"
-=======
                     withCredentials([usernamePassword(credentialsId: '316e0e5e-cd67-4266-8a21-9a6ef36a1bd0', passwordVariable: 'pass', usernameVariable: 'user')]) {
                         sh "git push https://$user:$pass@github.com/DeanKelly751/jenkins-kubernetes-pipeline.git master"
->>>>>>> Stashed changes
                     }
                 }
             }
