@@ -1,0 +1,34 @@
+You can enable the Jenkins service to start at boot with the command:
+
+sudo systemctl enable jenkins BASH
+
+Copied! You can start the Jenkins service with the command:
+
+sudo systemctl start jenkins You can check the status of the Jenkins service using the command:
+
+sudo systemctl status jenkins
+
+Open localhost:8080
+
+sThe command: sudo cat /var/lib/jenkins/secrets/initialAdminPassword will print the password at console.
+
+Click suggested plugins
+
+Create a user
+
+You are set up :)
+
+Navigate to manage Jenkins
+
+Install kuberentes & docker pipeline plugins
+
+Go to credentials and add github and docker credentials
+
+Connect Jenkins with Github
+
+Go to repo with Dockerfile
+2.Create a Jenkinsfile
+
+3.Paste this in:
+
+pipeline { environment { dockerimagename = "bravinwasike/react-app" dockerImage = "" } agent any stages { stage('Checkout Source') { steps { git 'https://github.com/YOURUSERNAME/jenkins-kubernetes-deployment.git' } } stage('Build image') { steps{ script { dockerImage = docker.build dockerimagename } } } stage('Pushing Image') { environment { registryCredential = 'dockerhub-credentials' } steps{ script { docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) { dockerImage.push("latest") } } } } stage('Deploying React.js container to Kubernetes') { steps { script { kubernetesDeploy(configs: "deployment.yaml", "service.yaml") } } } } }
